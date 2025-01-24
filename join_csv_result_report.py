@@ -2,37 +2,49 @@ import csv
 import re
 import pandas as pd
 
-#Todo　完全外部結合ではなく、アンケートメインの結合を行う
+path_customer_review = "./【正式運用版】お客様満足度アンケ.csv"
+path_bs_list = "./物件一覧_20241212133711.csv"
+path_bs_report_2022 = "./(2022年度)結果報告データ一覧_250106a.csv"
+path_bs_report_2023 = "./(2023年度)結果報告データ一覧_250106a.csv"
 
-path = "./joinedcsv/join_review.csv"
-path2 = "./(2022年度)結果報告データ一覧_250106a.csv"
-path3 = "./(2023年度)結果報告データ一覧_250106a.csv"
 
-customer_review = pd.read_csv(path, encoding="utf-8",  dtype=str)
+customer_review = pd.read_csv(path_customer_review, encoding="utf-16 LE", sep="\t")
+bs_list = pd.read_csv(path_bs_list, encoding="CP932")
+bs_report_2022 = pd.read_csv(path_bs_report_2022, encoding="CP932", dtype=str)
+bs_report_2023 = pd.read_csv(path_bs_report_2023, encoding="CP932", dtype=str)
+#結果報告書　2022+2023
+bs_report = pd.concat([bs_report_2022, bs_report_2023], axis=0, ignore_index=True)
 
-bs_list_2022 = pd.read_csv(path2, encoding="CP932", dtype=str)
-bs_list_2023 = pd.read_csv(path3, encoding="CP932", dtype=str)
+#アンケートの受注NOの形式が「6桁番号_案件名」のため、6桁番号を抽出（BS一覧の受注NOが6桁番号のみ）
+customer_review['受注NO'] = customer_review['受注NO'].map(lambda x : str(x)[:6])
 
-bs_list = pd.concat([bs_list_2022, bs_list_2023], axis=0, ignore_index=True)
-
+#アンケート＋BS一覧
+customer_review_with_bs_list = pd.merge(customer_review, bs_list, how="left", on="受注NO")
+#BS一覧の物件IDの型がfloat64になっているため、strに変換(結果報告書の物件IDがstr)
+customer_review_with_bs_list["物件ID"] = customer_review_with_bs_list["物件ID"].map(lambda x : str(x))
 # 物件IDをキーにして左結合
-join_review = pd.merge(customer_review, bs_list, how="left", on = "物件ID") # アンケート + BS一覧 + BS結果報告
+join_all = pd.merge(customer_review_with_bs_list, bs_report, how="left", on = "物件ID") # アンケート + BS一覧 + BS結果報告
+customer_review_with_bs_list["物件名"] = "【アンケート】" + customer_review_with_bs_list["物件名"]
+print(join_all.head)
 
-# アンケート + BS一覧 でcsv出力
-### 
+# # 欠損値を空文字列で埋める
+# result = customer_review_with_bs_list.fillna(" ")
+# result = join_all.fillna(" ")
 
-# BS一覧 + BS結果報告 でcsv出力
-### 
+# # アンケート + BS一覧 でcsv出力
+# ### 
 
-# 欠損値を空文字列で埋める
-result = join_review.fillna(" ")
+# # BS一覧 + BS結果報告 でcsv出力
+# ### 
 
-# join_review.to_csv('join_review_result_report.csv',encoding='utf-8')
-result.to_csv('join_review_result_report.csv',encoding='utf-8')
 
-print(result.head())
 
-a = pd.read_csv("join_review_result_report.csv", encoding="utf-8",  dtype=str)
+# # join_review.to_csv('join_review_result_report.csv',encoding='utf-8')
+# result.to_csv('join_review_result_report.csv',encoding='utf-8')
 
-print(a.columns)
-print(a.head())
+# print(result.head())
+
+# a = pd.read_csv("join_review_result_report.csv", encoding="utf-8",  dtype=str)
+
+# print(a.columns)
+# print(a.head())
