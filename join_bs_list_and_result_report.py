@@ -1,8 +1,4 @@
-import csv
-import re
 import pandas as pd
-
-#Todo　完全外部結合ではなく、アンケートメインの結合を行う
 
 path = "./物件一覧_20241212133711.csv"
 path2 = "./(2022年度)結果報告データ一覧_250106a.csv"

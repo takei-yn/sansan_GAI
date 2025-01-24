@@ -15,13 +15,14 @@ bs_list_2023 = pd.read_csv(path3, encoding="CP932", dtype=str)
 
 bs_list = pd.concat([bs_list_2022, bs_list_2023], axis=0, ignore_index=True)
 
-# print("customer_review")
-# print(customer_review.columns)
-# print("bs_list_2022")
-# print(bs_list_2022.columns)
-
 # 物件IDをキーにして左結合
-join_review = pd.merge(customer_review, bs_list, how="left", on = "物件ID")
+join_review = pd.merge(customer_review, bs_list, how="left", on = "物件ID") # アンケート + BS一覧 + BS結果報告
+
+# アンケート + BS一覧 でcsv出力
+### 
+
+# BS一覧 + BS結果報告 でcsv出力
+### 
 
 # 欠損値を空文字列で埋める
 result = join_review.fillna(" ")
